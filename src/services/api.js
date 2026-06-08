@@ -102,7 +102,7 @@ const api = {
     if (url === '/auth/login') {
       const users = getCollection('hotel_users');
       const user = users.find(
-        (u) => u.email === data.email && u.password === data.password
+        (u) => u.email.toLowerCase() === data.email.toLowerCase() && u.password === data.password
       );
       if (user) {
         return { data: { token: 'mock-token-' + Date.now() } };

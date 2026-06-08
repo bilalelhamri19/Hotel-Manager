@@ -48,6 +48,9 @@ const Login = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="admin@hotel.com"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck="false"
               required 
             />
           </div>

@@ -145,7 +145,7 @@ const Reservations = () => {
             {editId ? 'Edit Reservation' : 'New Reservation'}
           </h2>
           <form onSubmit={handleSubmit}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+            <div className="form-grid">
               <div className="form-group">
                 <label>Client</label>
                 <select

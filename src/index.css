@@ -39,6 +39,7 @@ body {
   padding: 2rem 3rem;
   flex: 1;
   width: calc(100% - 250px);
+  transition: margin-left 0.3s ease, width 0.3s ease, padding 0.3s ease;
 }
 
 .auth-container {
@@ -71,7 +72,8 @@ h1 {
 .table-container {
   background: var(--card-bg);
   border-radius: 12px;
-  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
   border: 1px solid var(--border-color);
   margin-top: 2rem;
@@ -239,4 +241,61 @@ input:focus, select:focus {
   display: flex;
   gap: 1rem;
   margin-top: 1.5rem;
+}
+
+/* Media Queries for Mobile Responsiveness */
+@media (max-width: 768px) {
+  .app-container {
+    flex-direction: column;
+  }
+  
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+    padding: 1.5rem 1rem;
+    padding-top: 5.5rem; /* Space for mobile header */
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .page-header h1 {
+    font-size: 1.75rem;
+  }
+
+  .page-header .btn {
+    width: 100%;
+  }
+
+  .auth-container {
+    padding: 1.5rem;
+  }
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 600px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .form-card {
+    padding: 1.5rem 1rem;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .form-actions .btn {
+    width: 100%;
+  }
 }

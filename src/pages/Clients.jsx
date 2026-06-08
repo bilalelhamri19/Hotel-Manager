@@ -100,7 +100,7 @@ const Clients = () => {
             {editId ? 'Edit Client' : 'Add New Client'}
           </h2>
           <form onSubmit={handleSubmit}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+            <div className="form-grid">
               <div className="form-group">
                 <label>Nom</label>
                 <input
