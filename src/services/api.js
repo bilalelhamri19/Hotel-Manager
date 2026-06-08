@@ -1,148 +1,193 @@
 // ====================================================
-//  Mock API — localStorage only, no backend needed
+//  Real API — Supabase (PostgreSQL cloud database)
+//  Data is shared across all devices in real time!
 // ====================================================
 
-const generateId = () =>
-  Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+import { supabase } from '../lib/supabase';
 
-// ---------- Seed data (loaded once if localStorage is empty) ----------
-const seedIfEmpty = () => {
-  if (!localStorage.getItem('hotel_users')) {
-    localStorage.setItem(
-      'hotel_users',
-      JSON.stringify([{ email: 'admin@hotel.com', password: 'admin123' }])
-    );
-  }
+// ---------- Auth (kept simple, hardcoded) ----------
+const ADMIN_EMAIL = 'admin@hotel.com';
+const ADMIN_PASSWORD = 'admin123';
 
-  if (!localStorage.getItem('hotel_clients')) {
-    localStorage.setItem(
-      'hotel_clients',
-      JSON.stringify([
-        { _id: 'c1', nom: 'Alami',   prenom: 'Mohammed', email: 'mohammed@example.com', telephone: '0612345678' },
-        { _id: 'c2', nom: 'Benali',  prenom: 'Fatima',   email: 'fatima@example.com',   telephone: '0698765432' },
-        { _id: 'c3', nom: 'Tazi',    prenom: 'Youssef',  email: 'youssef@example.com',  telephone: '0655443322' },
-        { _id: 'c4', nom: 'El Amri', prenom: 'Sara',     email: 'sara@example.com',     telephone: '0677112233' },
-      ])
-    );
-  }
-
-  if (!localStorage.getItem('hotel_chambres')) {
-    localStorage.setItem(
-      'hotel_chambres',
-      JSON.stringify([
-        { _id: 'ch1', numero: 101, type: 'simple', prix: 50,  disponible: true  },
-        { _id: 'ch2', numero: 102, type: 'double', prix: 80,  disponible: true  },
-        { _id: 'ch3', numero: 201, type: 'suite',  prix: 150, disponible: false },
-        { _id: 'ch4', numero: 202, type: 'double', prix: 90,  disponible: true  },
-        { _id: 'ch5', numero: 301, type: 'suite',  prix: 200, disponible: true  },
-        { _id: 'ch6', numero: 103, type: 'simple', prix: 55,  disponible: true  },
-      ])
-    );
-  }
-
-  if (!localStorage.getItem('hotel_reservations')) {
-    const today = new Date();
-    const fmt = (d) => d.toISOString().split('T')[0];
-    const addDays = (n) => { const d = new Date(today); d.setDate(d.getDate() + n); return d; };
-
-    localStorage.setItem(
-      'hotel_reservations',
-      JSON.stringify([
-        { _id: 'r1', clientId: 'c1', chambreId: 'ch3', dateDebut: fmt(addDays(-5)),  dateFin: fmt(addDays(2))  },
-        { _id: 'r2', clientId: 'c2', chambreId: 'ch2', dateDebut: fmt(addDays(3)),   dateFin: fmt(addDays(7))  },
-        { _id: 'r3', clientId: 'c3', chambreId: 'ch5', dateDebut: fmt(addDays(-10)), dateFin: fmt(addDays(-3)) },
-      ])
-    );
-  }
-};
-
-seedIfEmpty();
-
-// ---------- Helpers ----------
-const delay = () => new Promise((r) => setTimeout(r, 250));
-
-const KEY = {
-  '/clients':      'hotel_clients',
-  '/chambres':     'hotel_chambres',
-  '/reservations': 'hotel_reservations',
-};
-
-const getKey = (url) => {
-  for (const [route, key] of Object.entries(KEY)) {
-    if (url.startsWith(route)) return key;
-  }
-  return null;
-};
-
-const getCollection = (key) => JSON.parse(localStorage.getItem(key) || '[]');
-const setCollection = (key, data) => localStorage.setItem(key, JSON.stringify(data));
-
-const makeError = (message) => {
-  const err = new Error(message);
-  err.response = { data: { message } };
-  return err;
-};
-
-// ---------- Mock API object (same interface as axios) ----------
+// ---------- Mock API object (same interface as before) ----------
 const api = {
 
   // GET /clients  |  GET /chambres  |  GET /reservations
   get: async (url) => {
-    await delay();
-    const key = getKey(url);
-    if (!key) throw makeError('Route not found: ' + url);
-    return { data: getCollection(key) };
+    if (url.startsWith('/clients')) {
+      const { data, error } = await supabase
+        .from('clients')
+        .select('*')
+        .order('created_at', { ascending: true });
+      if (error) throw makeError(error.message);
+      // Map Supabase row → app format (_id for compatibility)
+      return { data: data.map(mapClient) };
+    }
+
+    if (url.startsWith('/chambres')) {
+      const { data, error } = await supabase
+        .from('chambres')
+        .select('*')
+        .order('numero', { ascending: true });
+      if (error) throw makeError(error.message);
+      return { data: data.map(mapChambre) };
+    }
+
+    if (url.startsWith('/reservations')) {
+      const { data, error } = await supabase
+        .from('reservations')
+        .select('*')
+        .order('created_at', { ascending: true });
+      if (error) throw makeError(error.message);
+      return { data: data.map(mapReservation) };
+    }
+
+    throw makeError('Route not found: ' + url);
   },
 
   // POST /auth/login  |  POST /clients  |  etc.
   post: async (url, data) => {
-    await delay();
 
-    // ── Auth ──
+    // ── Auth (hardcoded, no Supabase Auth needed) ──
     if (url === '/auth/login') {
-      const users = getCollection('hotel_users');
-      const user = users.find(
-        (u) => u.email.toLowerCase() === data.email.toLowerCase() && u.password === data.password
-      );
-      if (user) {
-        return { data: { token: 'mock-token-' + Date.now() } };
+      if (
+        data.email.toLowerCase() === ADMIN_EMAIL.toLowerCase() &&
+        data.password === ADMIN_PASSWORD
+      ) {
+        return { data: { token: 'hotel-token-' + Date.now() } };
       }
       throw makeError('Email ou mot de passe incorrect');
     }
 
-    // ── Other collections ──
-    const key = getKey(url);
-    if (!key) throw makeError('Route not found: ' + url);
-    const collection = getCollection(key);
-    const newItem = { _id: generateId(), ...data };
-    collection.push(newItem);
-    setCollection(key, collection);
-    return { data: newItem };
+    // ── Clients ──
+    if (url.startsWith('/clients')) {
+      const { data: row, error } = await supabase
+        .from('clients')
+        .insert({
+          nom: data.nom,
+          prenom: data.prenom,
+          email: data.email,
+          telephone: data.telephone,
+        })
+        .select()
+        .single();
+      if (error) throw makeError(error.message);
+      return { data: mapClient(row) };
+    }
+
+    // ── Chambres ──
+    if (url.startsWith('/chambres')) {
+      const { data: row, error } = await supabase
+        .from('chambres')
+        .insert({
+          numero: data.numero,
+          type: data.type,
+          prix: data.prix,
+          disponible: data.disponible,
+        })
+        .select()
+        .single();
+      if (error) throw makeError(error.message);
+      return { data: mapChambre(row) };
+    }
+
+    // ── Reservations ──
+    if (url.startsWith('/reservations')) {
+      const { data: row, error } = await supabase
+        .from('reservations')
+        .insert({
+          client_id: data.clientId,
+          chambre_id: data.chambreId,
+          date_debut: data.dateDebut,
+          date_fin: data.dateFin,
+        })
+        .select()
+        .single();
+      if (error) throw makeError(error.message);
+      return { data: mapReservation(row) };
+    }
+
+    throw makeError('Route not found: ' + url);
   },
 
   // PUT /clients/:id  |  PUT /chambres/:id  |  etc.
   put: async (url, data) => {
-    await delay();
-    const key = getKey(url);
-    if (!key) throw makeError('Route not found: ' + url);
     const id = url.split('/').pop();
-    const collection = getCollection(key);
-    const index = collection.findIndex((i) => i._id === id);
-    if (index === -1) throw makeError('Item not found');
-    collection[index] = { ...collection[index], ...data };
-    setCollection(key, collection);
-    return { data: collection[index] };
+
+    if (url.startsWith('/clients')) {
+      const { data: row, error } = await supabase
+        .from('clients')
+        .update({
+          nom: data.nom,
+          prenom: data.prenom,
+          email: data.email,
+          telephone: data.telephone,
+        })
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw makeError(error.message);
+      return { data: mapClient(row) };
+    }
+
+    if (url.startsWith('/chambres')) {
+      const { data: row, error } = await supabase
+        .from('chambres')
+        .update({
+          numero: data.numero,
+          type: data.type,
+          prix: data.prix,
+          disponible: data.disponible,
+        })
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw makeError(error.message);
+      return { data: mapChambre(row) };
+    }
+
+    if (url.startsWith('/reservations')) {
+      const { data: row, error } = await supabase
+        .from('reservations')
+        .update({
+          client_id: data.clientId,
+          chambre_id: data.chambreId,
+          date_debut: data.dateDebut,
+          date_fin: data.dateFin,
+        })
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw makeError(error.message);
+      return { data: mapReservation(row) };
+    }
+
+    throw makeError('Route not found: ' + url);
   },
 
   // DELETE /clients/:id  |  etc.
   delete: async (url) => {
-    await delay();
-    const key = getKey(url);
-    if (!key) throw makeError('Route not found: ' + url);
     const id = url.split('/').pop();
-    const collection = getCollection(key);
-    setCollection(key, collection.filter((i) => i._id !== id));
-    return { data: { success: true } };
+
+    if (url.startsWith('/clients')) {
+      const { error } = await supabase.from('clients').delete().eq('id', id);
+      if (error) throw makeError(error.message);
+      return { data: { success: true } };
+    }
+
+    if (url.startsWith('/chambres')) {
+      const { error } = await supabase.from('chambres').delete().eq('id', id);
+      if (error) throw makeError(error.message);
+      return { data: { success: true } };
+    }
+
+    if (url.startsWith('/reservations')) {
+      const { error } = await supabase.from('reservations').delete().eq('id', id);
+      if (error) throw makeError(error.message);
+      return { data: { success: true } };
+    }
+
+    throw makeError('Route not found: ' + url);
   },
 
   // Dummy interceptors so nothing breaks
@@ -151,5 +196,37 @@ const api = {
     response: { use: () => {} },
   },
 };
+
+// ---------- Helpers ----------
+const makeError = (message) => {
+  const err = new Error(message);
+  err.response = { data: { message } };
+  return err;
+};
+
+// Map Supabase row → app format (id → _id for compatibility with existing pages)
+const mapClient = (row) => ({
+  _id: row.id,
+  nom: row.nom,
+  prenom: row.prenom,
+  email: row.email,
+  telephone: row.telephone,
+});
+
+const mapChambre = (row) => ({
+  _id: row.id,
+  numero: row.numero,
+  type: row.type,
+  prix: row.prix,
+  disponible: row.disponible,
+});
+
+const mapReservation = (row) => ({
+  _id: row.id,
+  clientId: row.client_id,
+  chambreId: row.chambre_id,
+  dateDebut: row.date_debut,
+  dateFin: row.date_fin,
+});
 
 export default api;
