@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Users, Bed, CalendarCheck, LogOut, LogIn, Menu, X } from 'lucide-react';
+import { isSupabaseConfigured } from '../lib/supabase';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -41,6 +42,10 @@ const Navbar = () => {
       <nav className={`navbar ${isOpen ? 'is-open' : ''}`}>
         <div className="navbar-brand">
           <h2>Hotel Manager</h2>
+          <div className="db-status">
+            <span className={`status-dot ${isSupabaseConfigured ? 'online' : 'offline'}`}></span>
+            <span className="status-text">{isSupabaseConfigured ? 'Database: Cloud' : 'Database: Local'}</span>
+          </div>
         </div>
         <div className="navbar-menu">
           {token ? (
