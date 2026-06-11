@@ -233,12 +233,12 @@ const Reservations = () => {
             ) : (
               reservations.map(res => (
                 <tr key={res._id}>
-                  <td style={{ fontWeight: '500' }}>{getClientName(res.clientId)}</td>
-                  <td style={{ fontWeight: '600' }}>{getChambreNumero(res.chambreId)}</td>
-                  <td>{new Date(res.dateDebut).toLocaleDateString()}</td>
-                  <td>{new Date(res.dateFin).toLocaleDateString()}</td>
-                  <td>{getStatutBadge(res.dateDebut, res.dateFin)}</td>
-                  <td style={{ textAlign: 'right' }}>
+                  <td data-label="Client" style={{ fontWeight: '500' }}>{getClientName(res.clientId)}</td>
+                  <td data-label="Chambre" style={{ fontWeight: '600' }}>{getChambreNumero(res.chambreId)}</td>
+                  <td data-label="Date Début">{new Date(res.dateDebut).toLocaleDateString()}</td>
+                  <td data-label="Date Fin">{new Date(res.dateFin).toLocaleDateString()}</td>
+                  <td data-label="Statut">{getStatutBadge(res.dateDebut, res.dateFin)}</td>
+                  <td data-label="Actions" style={{ textAlign: 'right' }}>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
                       <button className="btn-icon edit" onClick={() => handleEdit(res)} title="Edit">
                         <Edit2 size={18} />

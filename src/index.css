@@ -107,6 +107,76 @@ tr:hover {
   background-color: #f1f5f9;
 }
 
+/* Responsive Tables for Mobile */
+@media (max-width: 768px) {
+  .table-container {
+    border: none;
+    box-shadow: none;
+    background: transparent;
+    margin-top: 1rem;
+  }
+
+  table {
+    display: block;
+    width: 100%;
+  }
+
+  table thead {
+    display: none; /* Hide header row */
+  }
+
+  table tbody {
+    display: block;
+    width: 100%;
+  }
+
+  table tr {
+    display: block;
+    width: 100%;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    box-sizing: border-box;
+    transition: transform 0.2s ease;
+  }
+
+  table tr:hover {
+    background-color: var(--card-bg);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  }
+
+  table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f1f5f9;
+    text-align: right;
+    font-size: 0.925rem;
+  }
+
+  table td:last-child {
+    border-bottom: none;
+    padding-top: 1rem;
+    padding-bottom: 0.25rem;
+    justify-content: flex-end;
+  }
+
+  table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--text-color);
+    text-align: left;
+    margin-right: 1.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+
 /* Forms & Inputs */
 .form-group {
   margin-bottom: 1.5rem;

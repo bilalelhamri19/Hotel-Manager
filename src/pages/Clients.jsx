@@ -175,11 +175,11 @@ const Clients = () => {
             ) : (
               clients.map(client => (
                 <tr key={client._id}>
-                  <td style={{ fontWeight: '500' }}>{client.nom}</td>
-                  <td>{client.prenom}</td>
-                  <td>{client.email}</td>
-                  <td>{client.telephone}</td>
-                  <td style={{ textAlign: 'right' }}>
+                  <td data-label="Nom" style={{ fontWeight: '500' }}>{client.nom}</td>
+                  <td data-label="Prénom">{client.prenom}</td>
+                  <td data-label="Email">{client.email}</td>
+                  <td data-label="Téléphone">{client.telephone}</td>
+                  <td data-label="Actions" style={{ textAlign: 'right' }}>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
                       <button className="btn-icon edit" onClick={() => handleEdit(client)} title="Edit">
                         <Edit2 size={18} />

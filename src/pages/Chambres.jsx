@@ -189,15 +189,15 @@ const Chambres = () => {
                 const isDisponible = chambre.disponible === true || chambre.disponible === 'true';
                 return (
                   <tr key={chambre._id}>
-                    <td style={{ fontWeight: '600' }}>#{chambre.numero}</td>
-                    <td style={{ textTransform: 'capitalize' }}>{chambre.type}</td>
-                    <td>{chambre.prix} €</td>
-                    <td>
+                    <td data-label="Numéro" style={{ fontWeight: '600' }}>#{chambre.numero}</td>
+                    <td data-label="Type" style={{ textTransform: 'capitalize' }}>{chambre.type}</td>
+                    <td data-label="Prix">{chambre.prix} €</td>
+                    <td data-label="Disponibilité">
                       <span className={`badge ${isDisponible ? 'badge-success' : 'badge-danger'}`}>
                         {isDisponible ? 'Disponible' : 'Réservée'}
                       </span>
                     </td>
-                    <td style={{ textAlign: 'right' }}>
+                    <td data-label="Actions" style={{ textAlign: 'right' }}>
                       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
                         <button className="btn-icon edit" onClick={() => handleEdit(chambre)} title="Edit">
                           <Edit2 size={18} />
