@@ -369,3 +369,27 @@ input:focus, select:focus {
     width: 100%;
   }
 }
+
+@media (max-width: 480px) {
+  html {
+    font-size: clamp(12px, 3vw, 14px);
+  }
+  .main-content {
+    padding: 1rem 0.5rem;
+    margin-left: 0;
+  }
+  .navbar {
+    width: 200px;
+  }
+  .navbar.is-open {
+    transform: translateX(0);
+  }
+  .navbar-brand h2 {
+    font-size: 1.2rem;
+  }
+  .nav-item {
+    font-size: 0.9rem;
+    padding: 0.75rem;
+  }
+}
+
