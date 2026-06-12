@@ -41,7 +41,7 @@ const Navbar = () => {
       {/* Sidebar Nav */}
       <nav className={`navbar ${isOpen ? 'is-open' : ''}`}>
         <div className="navbar-brand">
-          <h2>Hotel Manager</h2>
+          <h2 className="navbar-brand-title">Hotel Manager</h2>
           <div className="db-status">
             <span className={`status-dot ${isSupabaseConfigured ? 'online' : 'offline'}`}></span>
             <span className="status-text">{isSupabaseConfigured ? 'Database: Cloud' : 'Database: Local'}</span>
