@@ -134,7 +134,7 @@
   }
 
   .navbar {
-    width: 260px;
+    width: 280px;
     transform: translateX(-100%);
     z-index: 105;
     padding: 1.5rem;
