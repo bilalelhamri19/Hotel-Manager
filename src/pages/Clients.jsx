@@ -88,10 +88,12 @@ const Clients = () => {
           <h1>Clients</h1>
           <p style={{ color: 'var(--text-color)' }}>Manage your hotel guests</p>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowForm(true)}>
-          <Plus size={20} />
-          Add Client
-        </button>
+        { !showForm && (
+          <button className="btn btn-primary" onClick={() => setShowForm(true)}>
+            <Plus size={20} />
+            Add Client
+          </button>
+        ) }
       </div>
 
       {showForm && (

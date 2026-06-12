@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Users, Bed, CalendarCheck, LogOut, LogIn, Menu, X } from 'lucide-react';
 import { isSupabaseConfigured } from '../lib/supabase';
 import './Navbar.css';
-import logo from '../assets/logo.png';
+// Logo import removed
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -42,7 +42,7 @@ const Navbar = () => {
       {/* Sidebar Nav */}
       <nav className={`navbar ${isOpen ? 'is-open' : ''}`}>
         <div className="navbar-brand">
-          <img src={logo} alt="Hotel Manager" className="logo" />
+          <h2 className="navbar-brand-title">Hotel Manager</h2>
           <div className="db-status">
             <span className={`status-dot ${isSupabaseConfigured ? 'online' : 'offline'}`}></span>
             <span className="status-text">{isSupabaseConfigured ? 'Database: Cloud' : 'Database: Local'}</span>
