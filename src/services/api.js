@@ -56,9 +56,9 @@ const seedIfEmpty = () => {
     localStorage.setItem(
       'hotel_reservations',
       JSON.stringify([
-        { _id: 'r1', clientId: 'c1', chambreId: 'ch3', dateDebut: fmt(addDays(-5)),  dateFin: fmt(addDays(2))  },
-        { _id: 'r2', clientId: 'c2', chambreId: 'ch2', dateDebut: fmt(addDays(3)),   dateFin: fmt(addDays(7))  },
-        { _id: 'r3', clientId: 'c3', chambreId: 'ch5', dateDebut: fmt(addDays(-10)), dateFin: fmt(addDays(-3)) },
+        { _id: 'r1', clientId: 'c1', chambreId: 'ch3', dateDebut: fmt(addDays(-5)),  dateFin: fmt(addDays(2)), statutPaiement: true  },
+        { _id: 'r2', clientId: 'c2', chambreId: 'ch2', dateDebut: fmt(addDays(3)),   dateFin: fmt(addDays(7)), statutPaiement: false },
+        { _id: 'r3', clientId: 'c3', chambreId: 'ch5', dateDebut: fmt(addDays(-10)), dateFin: fmt(addDays(-3)), statutPaiement: true },
       ])
     );
   }
@@ -176,13 +176,12 @@ const supabaseApi = {
 
   post: async (url, data) => {
     if (url === '/auth/login') {
-      if (
-        data.email.toLowerCase() === ADMIN_EMAIL.toLowerCase() &&
-        data.password === ADMIN_PASSWORD
-      ) {
-        return { data: { token: 'hotel-token-' + Date.now() } };
-      }
-      throw makeError('Email ou mot de passe incorrect');
+      const { data: authData, error } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      });
+      if (error) throw makeError(error.message);
+      return { data: { token: authData.session.access_token, user: authData.user } };
     }
 
     if (url.startsWith('/clients')) {
@@ -223,6 +222,7 @@ const supabaseApi = {
           chambre_id: data.chambreId,
           date_debut: data.dateDebut,
           date_fin: data.dateFin,
+          statut_paiement: data.statutPaiement || false,
         })
         .select()
         .single();
@@ -276,6 +276,7 @@ const supabaseApi = {
           chambre_id: data.chambreId,
           date_debut: data.dateDebut,
           date_fin: data.dateFin,
+          statut_paiement: data.statutPaiement,
         })
         .eq('id', id)
         .select()
@@ -382,6 +383,7 @@ const mapReservation = (row) => ({
   chambreId: row.chambre_id,
   dateDebut: row.date_debut,
   dateFin: row.date_fin,
+  statutPaiement: row.statut_paiement || false,
 });
 
 export default api;

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Bed, CalendarCheck, LogOut, LogIn, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Users, Bed, CalendarCheck, Calendar as CalendarIcon, LogOut, LogIn, Menu, X } from 'lucide-react';
 import { isSupabaseConfigured } from '../lib/supabase';
 import './Navbar.css';
 
@@ -9,7 +9,11 @@ const Navbar = () => {
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    if (isSupabaseConfigured) {
+      const { supabase } = await import('../lib/supabase');
+      await supabase.auth.signOut();
+    }
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setIsOpen(false);
@@ -81,6 +85,14 @@ const Navbar = () => {
               >
                 <CalendarCheck size={20} />
                 <span>Reservations</span>
+              </Link>
+              <Link 
+                to="/calendrier" 
+                className="nav-item" 
+                onClick={() => setIsOpen(false)}
+              >
+                <CalendarIcon size={20} />
+                <span>Calendrier</span>
               </Link>
               <button onClick={handleLogout} className="nav-item logout-btn">
                 <LogOut size={20} />

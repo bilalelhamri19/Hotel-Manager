@@ -8,6 +8,8 @@ const Chambres = () => {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({ numero: '', type: 'simple', prix: '', disponible: true });
   const [editId, setEditId] = useState(null);
+  const [filterType, setFilterType] = useState('all');
+  const [filterDispo, setFilterDispo] = useState('all');
 
   useEffect(() => {
     fetchChambres();
@@ -90,6 +92,21 @@ const Chambres = () => {
     return <div style={{ padding: '2rem' }}>Loading chambres...</div>;
   }
 
+  const filteredChambres = chambres.filter(chambre => {
+    let matchesType = true;
+    let matchesDispo = true;
+    
+    if (filterType !== 'all') matchesType = chambre.type === filterType;
+    
+    if (filterDispo !== 'all') {
+      const isDispo = chambre.disponible === true || chambre.disponible === 'true';
+      if (filterDispo === 'dispo') matchesDispo = isDispo;
+      if (filterDispo === 'occupe') matchesDispo = !isDispo;
+    }
+    
+    return matchesType && matchesDispo;
+  });
+
   return (
     <div>
       <div className="page-header">
@@ -101,6 +118,30 @@ const Chambres = () => {
           <Plus size={20} />
           Add Chambre
         </button>
+      </div>
+
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+        <select
+          value={filterType}
+          onChange={(e) => setFilterType(e.target.value)}
+          className="form-control"
+          style={{ width: 'auto' }}
+        >
+          <option value="all">Tous les types</option>
+          <option value="simple">Simple</option>
+          <option value="double">Double</option>
+          <option value="suite">Suite</option>
+        </select>
+        <select
+          value={filterDispo}
+          onChange={(e) => setFilterDispo(e.target.value)}
+          className="form-control"
+          style={{ width: 'auto' }}
+        >
+          <option value="all">Toutes disponibilités</option>
+          <option value="dispo">Disponible</option>
+          <option value="occupe">Occupée</option>
+        </select>
       </div>
 
       {showForm && (
@@ -178,14 +219,14 @@ const Chambres = () => {
             </tr>
           </thead>
           <tbody>
-            {chambres.length === 0 ? (
+            {filteredChambres.length === 0 ? (
               <tr>
                 <td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-color)', padding: '2rem' }}>
                   No chambres found.
                 </td>
               </tr>
             ) : (
-              chambres.map(chambre => {
+              filteredChambres.map(chambre => {
                 const isDisponible = chambre.disponible === true || chambre.disponible === 'true';
                 return (
                   <tr key={chambre._id}>

@@ -8,6 +8,7 @@ const Clients = () => {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({ nom: '', prenom: '', email: '', telephone: '' });
   const [editId, setEditId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchClients();
@@ -81,6 +82,11 @@ const Clients = () => {
     return <div style={{ padding: '2rem' }}>Loading clients...</div>;
   }
 
+  const filteredClients = clients.filter(client => {
+    const searchStr = `${client.nom} ${client.prenom} ${client.telephone}`.toLowerCase();
+    return searchStr.includes(searchTerm.toLowerCase());
+  });
+
   return (
     <div>
       <div className="page-header">
@@ -94,6 +100,17 @@ const Clients = () => {
             Add Client
           </button>
         ) }
+      </div>
+
+      <div style={{ marginBottom: '1.5rem' }}>
+        <input
+          type="text"
+          placeholder="Rechercher par nom, prénom ou téléphone..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="form-control"
+          style={{ width: '100%', maxWidth: '400px' }}
+        />
       </div>
 
       {showForm && (
@@ -168,14 +185,14 @@ const Clients = () => {
             </tr>
           </thead>
           <tbody>
-            {clients.length === 0 ? (
+            {filteredClients.length === 0 ? (
               <tr>
                 <td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-color)', padding: '2rem' }}>
                   No clients found.
                 </td>
               </tr>
             ) : (
-              clients.map(client => (
+              filteredClients.map(client => (
                 <tr key={client._id}>
                   <td data-label="Nom" style={{ fontWeight: '500' }}>{client.nom}</td>
                   <td data-label="Prénom">{client.prenom}</td>

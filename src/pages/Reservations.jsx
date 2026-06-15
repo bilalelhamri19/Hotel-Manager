@@ -8,9 +8,11 @@ const Reservations = () => {
   const [chambres, setChambres] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({ clientId: '', chambreId: '', dateDebut: '', dateFin: '' });
+  const [formData, setFormData] = useState({ clientId: '', chambreId: '', dateDebut: '', dateFin: '', statutPaiement: false });
   const [editId, setEditId] = useState(null);
   const [receiptData, setReceiptData] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterPaiement, setFilterPaiement] = useState('all');
 
   useEffect(() => {
     fetchData();
@@ -52,7 +54,7 @@ const Reservations = () => {
         // As per requirements: "After adding reservation, refresh chambres and reservations"
       }
       setShowForm(false);
-      setFormData({ clientId: '', chambreId: '', dateDebut: '', dateFin: '' });
+      setFormData({ clientId: '', chambreId: '', dateDebut: '', dateFin: '', statutPaiement: false });
       setEditId(null);
       fetchData(); // Refresh all data
     } catch (error) {
@@ -66,7 +68,8 @@ const Reservations = () => {
       clientId: res.clientId,
       chambreId: res.chambreId,
       dateDebut: new Date(res.dateDebut).toISOString().split('T')[0],
-      dateFin: new Date(res.dateFin).toISOString().split('T')[0]
+      dateFin: new Date(res.dateFin).toISOString().split('T')[0],
+      statutPaiement: res.statutPaiement || false
     });
     setEditId(res._id);
     setShowForm(true);
@@ -86,7 +89,7 @@ const Reservations = () => {
 
   const resetForm = () => {
     setShowForm(false);
-    setFormData({ clientId: '', chambreId: '', dateDebut: '', dateFin: '' });
+    setFormData({ clientId: '', chambreId: '', dateDebut: '', dateFin: '', statutPaiement: false });
     setEditId(null);
   };
 
@@ -145,6 +148,7 @@ const Reservations = () => {
       dateFin: end,
       nights,
       total,
+      statutPaiement: res.statutPaiement,
     });
   };
 
@@ -196,6 +200,17 @@ const Reservations = () => {
     c.disponible === true || c.disponible === 'true' || (editId && c._id === formData.chambreId)
   );
 
+  const filteredReservations = reservations.filter(res => {
+    const clientName = getClientName(res.clientId).toLowerCase();
+    const matchesSearch = clientName.includes(searchTerm.toLowerCase());
+    
+    let matchesPaiement = true;
+    if (filterPaiement === 'paye') matchesPaiement = res.statutPaiement === true;
+    if (filterPaiement === 'non_paye') matchesPaiement = res.statutPaiement !== true;
+    
+    return matchesSearch && matchesPaiement;
+  });
+
   return (
     <div>
       <div className="page-header">
@@ -207,6 +222,27 @@ const Reservations = () => {
           <Plus size={20} />
           Add Reservation
         </button>
+      </div>
+
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+        <input
+          type="text"
+          placeholder="Rechercher par nom de client..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="form-control"
+          style={{ flex: '1', minWidth: '200px' }}
+        />
+        <select
+          value={filterPaiement}
+          onChange={(e) => setFilterPaiement(e.target.value)}
+          className="form-control"
+          style={{ width: 'auto' }}
+        >
+          <option value="all">Tous les paiements</option>
+          <option value="paye">Payé</option>
+          <option value="non_paye">Non Payé</option>
+        </select>
       </div>
 
       {showForm && (
@@ -268,6 +304,18 @@ const Reservations = () => {
                   required
                 />
               </div>
+              <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    name="statutPaiement"
+                    checked={formData.statutPaiement}
+                    onChange={(e) => setFormData(prev => ({ ...prev, statutPaiement: e.target.checked }))}
+                    style={{ width: 'auto' }}
+                  />
+                  <span style={{ fontWeight: 500 }}>Marquer comme payé</span>
+                </label>
+              </div>
             </div>
             <div className="form-actions">
               <button type="submit" className="btn btn-primary">
@@ -289,25 +337,33 @@ const Reservations = () => {
               <th>Chambre</th>
               <th>Date Début</th>
               <th>Date Fin</th>
-              <th>Statut</th>
+              <th>Statut Séjour</th>
+              <th>Paiement</th>
               <th style={{ textAlign: 'right' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {reservations.length === 0 ? (
+            {filteredReservations.length === 0 ? (
               <tr>
-                <td colSpan="6" style={{ textAlign: 'center', color: 'var(--text-color)', padding: '2rem' }}>
+                <td colSpan="7" style={{ textAlign: 'center', color: 'var(--text-color)', padding: '2rem' }}>
                   No reservations found.
                 </td>
               </tr>
             ) : (
-              reservations.map(res => (
+              filteredReservations.map(res => (
                 <tr key={res._id}>
                   <td data-label="Client" style={{ fontWeight: '500' }}>{getClientName(res.clientId)}</td>
                   <td data-label="Chambre" style={{ fontWeight: '600' }}>{getChambreNumero(res.chambreId)}</td>
                   <td data-label="Date Début">{new Date(res.dateDebut).toLocaleDateString()}</td>
                   <td data-label="Date Fin">{new Date(res.dateFin).toLocaleDateString()}</td>
-                  <td data-label="Statut">{getStatutBadge(res.dateDebut, res.dateFin)}</td>
+                  <td data-label="Statut Séjour">{getStatutBadge(res.dateDebut, res.dateFin)}</td>
+                  <td data-label="Paiement">
+                    {res.statutPaiement ? (
+                      <span className="badge badge-success">Payé</span>
+                    ) : (
+                      <span className="badge badge-warning">Non Payé</span>
+                    )}
+                  </td>
                   <td data-label="Actions" style={{ textAlign: 'right' }}>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
                       <button className="btn-icon" onClick={() => openReceipt(res)} title="Reçu" style={{ color: '#10b981' }}>
@@ -469,11 +525,26 @@ const Reservations = () => {
               {/* Total */}
               <div style={{
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                background: '#f8fafc', padding: '1rem 1.25rem', borderRadius: '10px',
-                border: '1px solid #e2e8f0',
+                background: receiptData.statutPaiement ? '#f0fdf4' : '#f8fafc',
+                padding: '1rem 1.25rem', borderRadius: '10px',
+                border: '1px solid', borderColor: receiptData.statutPaiement ? '#bbf7d0' : '#e2e8f0',
               }}>
-                <span style={{ fontWeight: 600, color: '#475569' }}>Total à payer</span>
-                <span style={{ fontSize: '1.5rem', fontWeight: 700, color: '#3b82f6' }}>{receiptData.total} €</span>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontWeight: 600, color: receiptData.statutPaiement ? '#166534' : '#475569' }}>
+                    Total à payer
+                  </span>
+                  {receiptData.statutPaiement && (
+                    <span style={{ fontSize: '0.75rem', color: '#16a34a', fontWeight: 600, marginTop: '0.25rem' }}>
+                      ✓ Payé
+                    </span>
+                  )}
+                  {!receiptData.statutPaiement && (
+                    <span style={{ fontSize: '0.75rem', color: '#ef4444', fontWeight: 600, marginTop: '0.25rem' }}>
+                      ⚠ Non Payé
+                    </span>
+                  )}
+                </div>
+                <span style={{ fontSize: '1.5rem', fontWeight: 700, color: receiptData.statutPaiement ? '#15803d' : '#3b82f6' }}>{receiptData.total} €</span>
               </div>
 
               {/* Footer */}

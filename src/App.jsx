@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import Clients from './pages/Clients';
 import Chambres from './pages/Chambres';
 import Reservations from './pages/Reservations';
+import Calendrier from './pages/Calendrier';
 import './index.css';
 
 const ProtectedRoute = ({ children }) => {
@@ -56,6 +57,11 @@ function App() {
           <Route path="/reservations" element={
             <ProtectedRoute>
               <Reservations />
+            </ProtectedRoute>
+          } />
+          <Route path="/calendrier" element={
+            <ProtectedRoute>
+              <Calendrier />
             </ProtectedRoute>
           } />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />

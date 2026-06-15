@@ -1,0 +1,24 @@
+{
+  "hotel_users": [
+    { "id": "u1", "email": "admin@hotel.com", "password": "admin123" }
+  ],
+  "hotel_clients": [
+    { "id": "c1", "nom": "Alami",   "prenom": "Mohammed", "email": "mohammed@example.com", "telephone": "0612345678" },
+    { "id": "c2", "nom": "Benali",  "prenom": "Fatima",   "email": "fatima@example.com",   "telephone": "0698765432" },
+    { "id": "c3", "nom": "Tazi",    "prenom": "Youssef",  "email": "youssef@example.com",  "telephone": "0655443322" },
+    { "id": "c4", "nom": "El Amri", "prenom": "Sara",     "email": "sara@example.com",     "telephone": "0677112233" }
+  ],
+  "hotel_chambres": [
+    { "id": "ch1", "numero": 101, "type": "simple", "prix": 50,  "disponible": true  },
+    { "id": "ch2", "numero": 102, "type": "double", "prix": 80,  "disponible": true  },
+    { "id": "ch3", "numero": 201, "type": "suite",  "prix": 150, "disponible": false },
+    { "id": "ch4", "numero": 202, "type": "double", "prix": 90,  "disponible": true  },
+    { "id": "ch5", "numero": 301, "type": "suite",  "prix": 200, "disponible": true  },
+    { "id": "ch6", "numero": 103, "type": "simple", "prix": 55,  "disponible": true  }
+  ],
+  "hotel_reservations": [
+    { "id": "r1", "clientId": "c1", "chambreId": "ch3", "dateDebut": "2024-05-10", "dateFin": "2024-05-17" },
+    { "id": "r2", "clientId": "c2", "chambreId": "ch2", "dateDebut": "2024-05-18", "dateFin": "2024-05-22" },
+    { "id": "r3", "clientId": "c3", "chambreId": "ch5", "dateDebut": "2024-05-05", "dateFin": "2024-05-12" }
+  ]
+}
