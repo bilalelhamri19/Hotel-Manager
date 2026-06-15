@@ -1,5 +1,5 @@
 // Self-destroying service worker to clear cache and unregister
-self.addEventListener('install', event => {
+self.addEventListener('install', () => {
   self.skipWaiting();
 });
 

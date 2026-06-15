@@ -7,9 +7,13 @@ const GlobalSearch = ({ isOpen, onClose }) => {
   const inputRef = useRef(null);
   const navigate = useNavigate();
 
+  const handleClose = () => {
+    setQuery('');
+    onClose();
+  };
+
   useEffect(() => {
     if (isOpen) {
-      setQuery('');
       setTimeout(() => inputRef.current?.focus(), 50);
     }
   }, [isOpen]);
@@ -20,7 +24,7 @@ const GlobalSearch = ({ isOpen, onClose }) => {
         e.preventDefault();
       }
       if (isOpen && e.key === 'Escape') {
-        onClose();
+        handleClose();
       }
     };
     document.addEventListener('keydown', handleKeyDown);
@@ -33,12 +37,12 @@ const GlobalSearch = ({ isOpen, onClose }) => {
     e.preventDefault();
     if (query.trim()) {
       navigate('/clients');
-      onClose();
+      handleClose();
     }
   };
 
   return (
-    <div className="modal-overlay" style={{ display: 'flex', alignItems: 'flex-start', paddingTop: '10vh', paddingLeft: '1rem', paddingRight: '1rem' }} onClick={onClose}>
+    <div className="modal-overlay" style={{ display: 'flex', alignItems: 'flex-start', paddingTop: '10vh', paddingLeft: '1rem', paddingRight: '1rem' }} onClick={handleClose}>
       <div className="card" style={{ width: '100%', maxWidth: '600px', padding: '1rem' }} onClick={e => e.stopPropagation()}>
         <form onSubmit={handleSearch} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <Search size={24} style={{ color: 'var(--text-color)' }} />
@@ -51,7 +55,7 @@ const GlobalSearch = ({ isOpen, onClose }) => {
             placeholder="Rechercher clients, réservations..."
             style={{ flex: 1, fontSize: '1.2rem', color: 'var(--text-main)' }}
           />
-          <button type="button" className="btn-icon" onClick={onClose}>
+          <button type="button" className="btn-icon" onClick={handleClose}>
             <X size={24} />
           </button>
         </form>
