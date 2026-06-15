@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { LogIn } from 'lucide-react';
 import api from '../services/api';
 
@@ -16,6 +16,7 @@ const Login = () => {
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify({ email }));
+        localStorage.setItem('role', response.data.user.role || 'admin');
         navigate('/dashboard');
       }
     } catch (err) {
@@ -69,9 +70,7 @@ const Login = () => {
           </button>
         </form>
 
-        <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.9rem' }}>
-          Vous n'avez pas de compte ? <Link to="/register" style={{ color: 'var(--primary-color)', fontWeight: '600', textDecoration: 'none' }}>S'inscrire</Link>
-        </div>
+
       </div>
     </div>
   );

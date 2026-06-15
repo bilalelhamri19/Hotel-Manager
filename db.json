@@ -1,6 +1,7 @@
 {
   "hotel_users": [
-    { "id": "u1", "email": "admin@hotel.com", "password": "admin123" }
+    { "id": "u1", "email": "admin@hotel.com", "password": "admin123" },
+    { "id": "u2", "email": "user@hotel.com", "password": "user123" }
   ],
   "hotel_clients": [
     { "id": "c1", "nom": "Alami",   "prenom": "Mohammed", "email": "mohammed@example.com", "telephone": "0612345678" },

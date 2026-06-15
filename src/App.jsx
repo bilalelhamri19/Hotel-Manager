@@ -6,11 +6,12 @@ import Clients from './pages/Clients';
 import Chambres from './pages/Chambres';
 import Reservations from './pages/Reservations';
 import Calendrier from './pages/Calendrier';
-import Register from './pages/Register';
-import Users from './pages/Users';
+
+
 import Paiements from './pages/Paiements';
 import Rapports from './pages/Rapports';
 import AuditLog from './pages/AuditLog';
+import AdminRoute from './components/AdminRoute';
 import './index.css';
 
 const ProtectedRoute = ({ children }) => {
@@ -26,7 +27,7 @@ const ProtectedRoute = ({ children }) => {
 
 const Layout = ({ children }) => {
   const location = useLocation();
-  const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
+  const isAuthPage = location.pathname === '/login';
 
   return (
     <div className="app-container">
@@ -44,7 +45,7 @@ function App() {
       <Layout>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="/register" element={<Navigate to="/login" replace />} />
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <Dashboard />
@@ -60,11 +61,7 @@ function App() {
               <Chambres />
             </ProtectedRoute>
           } />
-          <Route path="/users" element={
-            <ProtectedRoute>
-              <Users />
-            </ProtectedRoute>
-          } />
+
           <Route path="/reservations" element={
             <ProtectedRoute>
               <Reservations />

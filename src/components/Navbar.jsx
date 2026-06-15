@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Bed, CalendarCheck, Calendar as CalendarIcon, LogOut, LogIn, Menu, X, Moon, Sun, Search, UserCog, CreditCard, BarChart, Activity } from 'lucide-react';
+import { LayoutDashboard, Users, Bed, CalendarCheck, Calendar as CalendarIcon, LogOut, LogIn, Menu, X, Moon, Sun, Search, CreditCard, BarChart, Activity } from 'lucide-react';
 import { isSupabaseConfigured } from '../lib/supabase';
 import GlobalSearch from './GlobalSearch';
 import NotificationBell from './NotificationBell';
@@ -33,6 +33,7 @@ const Navbar = () => {
     }
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('role');
     setIsOpen(false);
     navigate('/login');
   };
@@ -109,10 +110,7 @@ const Navbar = () => {
                 <Users size={20} />
                 <span>Clients</span>
               </Link>
-              <Link to="/users" className="nav-item" onClick={() => setIsOpen(false)}>
-                <UserCog size={20} />
-                <span>Utilisateurs</span>
-              </Link>
+
               <Link to="/chambres" className="nav-item" onClick={() => setIsOpen(false)}>
                 <Bed size={20} />
                 <span>Chambres</span>

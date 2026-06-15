@@ -2,6 +2,15 @@ import { useState, useEffect } from 'react';
 import { Shield, Trash2 } from 'lucide-react';
 import api from '../services/api';
 
+const getCurrentUserEmail = () => {
+  try {
+    const user = JSON.parse(localStorage.getItem('user'));
+    return user?.email || null;
+  } catch {
+    return null;
+  }
+};
+
 const Users = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -65,26 +74,31 @@ const Users = () => {
                 </td>
               </tr>
             ) : (
-              users.map(user => (
-                <tr key={user._id || user.id}>
-                  <td data-label="Nom" style={{ fontWeight: '500' }}>
-                    {user.prenom} {user.nom}
-                  </td>
-                  <td data-label="Email">{user.email}</td>
-                  <td data-label="Rôle">
-                    <span className="badge badge-info" style={{ display: 'inline-flex', gap: '0.25rem' }}>
-                      <Shield size={14} /> {user.role || 'Admin'}
-                    </span>
-                  </td>
-                  <td data-label="Actions" style={{ textAlign: 'right' }}>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                      <button className="btn-icon delete" onClick={() => handleDelete(user._id || user.id)} title="Delete">
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
+              users.map(user => {
+                const isSelf = user.email === getCurrentUserEmail();
+                return (
+                  <tr key={user._id || user.id}>
+                    <td data-label="Nom" style={{ fontWeight: '500' }}>
+                      {user.prenom} {user.nom}
+                    </td>
+                    <td data-label="Email">{user.email}</td>
+                    <td data-label="Rôle">
+                      <span className="badge badge-info" style={{ display: 'inline-flex', gap: '0.25rem' }}>
+                        <Shield size={14} /> {user.role || 'Admin'}
+                      </span>
+                    </td>
+                    <td data-label="Actions" style={{ textAlign: 'right' }}>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        {!isSelf && (
+                          <button className="btn-icon delete" onClick={() => handleDelete(user._id || user.id)} title="Supprimer">
+                            <Trash2 size={18} />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
