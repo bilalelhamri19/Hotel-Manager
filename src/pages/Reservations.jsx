@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Printer, X } from 'lucide-react';
 import api from '../services/api';
+import Pagination from '../components/Pagination';
 
 const Reservations = () => {
   const [reservations, setReservations] = useState([]);
@@ -10,13 +11,20 @@ const Reservations = () => {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({ clientId: '', chambreId: '', dateDebut: '', dateFin: '', statutPaiement: false });
   const [editId, setEditId] = useState(null);
+  const [error, setError] = useState('');
   const [receiptData, setReceiptData] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPaiement, setFilterPaiement] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterPaiement]);
 
   const fetchData = async () => {
     try {
@@ -43,23 +51,44 @@ const Reservations = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+
+    const start = new Date(formData.dateDebut);
+    const end = new Date(formData.dateFin);
+
+    if (end <= start) {
+      setError("La date de fin doit être postérieure à la date de début.");
+      return;
+    }
+
+    const overlapping = reservations.find(res => {
+      if (editId && res._id === editId) return false;
+      if (res.chambreId !== formData.chambreId) return false;
+
+      const resStart = new Date(res.dateDebut);
+      const resEnd = new Date(res.dateFin);
+
+      return Math.max(start, resStart) < Math.min(end, resEnd);
+    });
+
+    if (overlapping) {
+      setError("La chambre est déjà réservée pour cette période.");
+      return;
+    }
+
     try {
       if (editId) {
         await api.put(`/reservations/${editId}`, formData);
       } else {
         await api.post('/reservations', formData);
-        
-        // After adding, we also need to update chambre availability
-        // Some backends do it automatically, if not, we can trigger an update.
-        // As per requirements: "After adding reservation, refresh chambres and reservations"
       }
       setShowForm(false);
       setFormData({ clientId: '', chambreId: '', dateDebut: '', dateFin: '', statutPaiement: false });
       setEditId(null);
       fetchData(); // Refresh all data
-    } catch (error) {
-      console.error('Error saving reservation:', error);
-      alert('Error saving reservation. Please try again.');
+    } catch (err) {
+      console.error('Error saving reservation:', err);
+      setError('Erreur lors de la sauvegarde. Veuillez réessayer.');
     }
   };
 
@@ -89,6 +118,7 @@ const Reservations = () => {
 
   const resetForm = () => {
     setShowForm(false);
+    setError('');
     setFormData({ clientId: '', chambreId: '', dateDebut: '', dateFin: '', statutPaiement: false });
     setEditId(null);
   };
@@ -211,6 +241,12 @@ const Reservations = () => {
     return matchesSearch && matchesPaiement;
   });
 
+  const totalPages = Math.ceil(filteredReservations.length / itemsPerPage);
+  const paginatedReservations = filteredReservations.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
     <div>
       <div className="page-header">
@@ -250,6 +286,7 @@ const Reservations = () => {
           <h2 style={{ marginBottom: '1.5rem', fontSize: '1.25rem' }}>
             {editId ? 'Edit Reservation' : 'New Reservation'}
           </h2>
+          {error && <div className="error-message">{error}</div>}
           <form onSubmit={handleSubmit}>
             <div className="form-grid">
               <div className="form-group">
@@ -343,14 +380,14 @@ const Reservations = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredReservations.length === 0 ? (
+            {paginatedReservations.length === 0 ? (
               <tr>
                 <td colSpan="7" style={{ textAlign: 'center', color: 'var(--text-color)', padding: '2rem' }}>
                   No reservations found.
                 </td>
               </tr>
             ) : (
-              filteredReservations.map(res => (
+              paginatedReservations.map(res => (
                 <tr key={res._id}>
                   <td data-label="Client" style={{ fontWeight: '500' }}>{getClientName(res.clientId)}</td>
                   <td data-label="Chambre" style={{ fontWeight: '600' }}>{getChambreNumero(res.chambreId)}</td>
@@ -382,6 +419,14 @@ const Reservations = () => {
             )}
           </tbody>
         </table>
+        
+        <Pagination 
+          currentPage={currentPage} 
+          totalPages={totalPages} 
+          onPageChange={setCurrentPage} 
+          totalItems={filteredReservations.length} 
+          itemsPerPage={itemsPerPage} 
+        />
       </div>
 
       {/* ===== Receipt Modal ===== */}
@@ -396,7 +441,7 @@ const Reservations = () => {
         >
           <div
             style={{
-              background: '#fff', borderRadius: '16px', width: '100%', maxWidth: '520px',
+              background: 'var(--card-bg)', borderRadius: '16px', width: '100%', maxWidth: '520px',
               maxHeight: '90vh', overflowY: 'auto', position: 'relative',
               boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
             }}

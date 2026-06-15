@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, LayoutGrid, List } from 'lucide-react';
 import api from '../services/api';
+import Pagination from '../components/Pagination';
 
 const Chambres = () => {
   const [chambres, setChambres] = useState([]);
@@ -10,10 +11,17 @@ const Chambres = () => {
   const [editId, setEditId] = useState(null);
   const [filterType, setFilterType] = useState('all');
   const [filterDispo, setFilterDispo] = useState('all');
+  const [viewMode, setViewMode] = useState('grid');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     fetchChambres();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterType, filterDispo]);
 
   const fetchChambres = async () => {
     try {
@@ -107,6 +115,19 @@ const Chambres = () => {
     return matchesType && matchesDispo;
   });
 
+  const totalPages = Math.ceil(filteredChambres.length / itemsPerPage);
+  const paginatedChambres = filteredChambres.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const getImageForType = (type) => {
+    if (type === 'simple') return 'https://images.unsplash.com/photo-1598928506311-c55dd1b31bb1?auto=format&fit=crop&w=400&q=80';
+    if (type === 'double') return 'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=400&q=80';
+    if (type === 'suite') return 'https://images.unsplash.com/photo-1582719478250-c89404bb8a0e?auto=format&fit=crop&w=400&q=80';
+    return 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=400&q=80';
+  };
+
   return (
     <div>
       <div className="page-header">
@@ -114,10 +135,26 @@ const Chambres = () => {
           <h1>Chambres</h1>
           <p style={{ color: 'var(--text-color)' }}>Manage hotel rooms and availability</p>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowForm(true)}>
-          <Plus size={20} />
-          Add Chambre
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button 
+            className={`btn-icon ${viewMode === 'grid' ? 'active' : ''}`} 
+            onClick={() => setViewMode('grid')}
+            style={viewMode === 'grid' ? { background: 'var(--primary-light)', color: 'var(--primary-color)' } : {}}
+          >
+            <LayoutGrid size={20} />
+          </button>
+          <button 
+            className={`btn-icon ${viewMode === 'table' ? 'active' : ''}`} 
+            onClick={() => setViewMode('table')}
+            style={viewMode === 'table' ? { background: 'var(--primary-light)', color: 'var(--primary-color)' } : {}}
+          >
+            <List size={20} />
+          </button>
+          <button className="btn btn-primary" onClick={() => setShowForm(true)}>
+            <Plus size={20} />
+            Add Chambre
+          </button>
+        </div>
       </div>
 
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
@@ -207,54 +244,101 @@ const Chambres = () => {
         </div>
       )}
 
-      <div className="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Numéro</th>
-              <th>Type</th>
-              <th>Prix</th>
-              <th>Disponibilité</th>
-              <th style={{ textAlign: 'right' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredChambres.length === 0 ? (
-              <tr>
-                <td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-color)', padding: '2rem' }}>
-                  No chambres found.
-                </td>
-              </tr>
-            ) : (
-              filteredChambres.map(chambre => {
-                const isDisponible = chambre.disponible === true || chambre.disponible === 'true';
-                return (
-                  <tr key={chambre._id}>
-                    <td data-label="Numéro" style={{ fontWeight: '600' }}>#{chambre.numero}</td>
-                    <td data-label="Type" style={{ textTransform: 'capitalize' }}>{chambre.type}</td>
-                    <td data-label="Prix">{chambre.prix} €</td>
-                    <td data-label="Disponibilité">
+      {viewMode === 'grid' ? (
+        <div className="room-cards-grid">
+          {paginatedChambres.length === 0 ? (
+            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem', color: 'var(--text-color)' }}>No chambres found.</div>
+          ) : (
+            paginatedChambres.map(chambre => {
+              const isDisponible = chambre.disponible === true || chambre.disponible === 'true';
+              return (
+                <div key={chambre._id} className="room-card">
+                  <img src={getImageForType(chambre.type)} alt={chambre.type} className="room-card-image" />
+                  <div className="room-card-body">
+                    <div className="room-card-header">
+                      <span className="room-card-title">Chambre #{chambre.numero}</span>
                       <span className={`badge ${isDisponible ? 'badge-success' : 'badge-danger'}`}>
                         {isDisponible ? 'Disponible' : 'Réservée'}
                       </span>
-                    </td>
-                    <td data-label="Actions" style={{ textAlign: 'right' }}>
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
-                        <button className="btn-icon edit" onClick={() => handleEdit(chambre)} title="Edit">
-                          <Edit2 size={18} />
-                        </button>
-                        <button className="btn-icon delete" onClick={() => handleDelete(chambre._id)} title="Delete">
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+                    </div>
+                    <div style={{ color: 'var(--text-color)', fontSize: '0.9rem', marginBottom: '0.5rem', textTransform: 'capitalize' }}>
+                      Type: {chambre.type}
+                    </div>
+                    <div className="room-card-price">
+                      {chambre.prix} € / nuit
+                    </div>
+                    <div className="room-card-actions">
+                      <button className="btn-icon edit" onClick={() => handleEdit(chambre)} title="Edit" style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+                        <Edit2 size={18} />
+                      </button>
+                      <button className="btn-icon delete" onClick={() => handleDelete(chambre._id)} title="Delete" style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      ) : (
+        <div className="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Numéro</th>
+                <th>Type</th>
+                <th>Prix</th>
+                <th>Disponibilité</th>
+                <th style={{ textAlign: 'right' }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedChambres.length === 0 ? (
+                <tr>
+                  <td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-color)', padding: '2rem' }}>
+                    No chambres found.
+                  </td>
+                </tr>
+              ) : (
+                paginatedChambres.map(chambre => {
+                  const isDisponible = chambre.disponible === true || chambre.disponible === 'true';
+                  return (
+                    <tr key={chambre._id}>
+                      <td data-label="Numéro" style={{ fontWeight: '600' }}>#{chambre.numero}</td>
+                      <td data-label="Type" style={{ textTransform: 'capitalize' }}>{chambre.type}</td>
+                      <td data-label="Prix">{chambre.prix} €</td>
+                      <td data-label="Disponibilité">
+                        <span className={`badge ${isDisponible ? 'badge-success' : 'badge-danger'}`}>
+                          {isDisponible ? 'Disponible' : 'Réservée'}
+                        </span>
+                      </td>
+                      <td data-label="Actions" style={{ textAlign: 'right' }}>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                          <button className="btn-icon edit" onClick={() => handleEdit(chambre)} title="Edit">
+                            <Edit2 size={18} />
+                          </button>
+                          <button className="btn-icon delete" onClick={() => handleDelete(chambre._id)} title="Delete">
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+      
+      <Pagination 
+          currentPage={currentPage} 
+          totalPages={totalPages} 
+          onPageChange={setCurrentPage} 
+          totalItems={filteredChambres.length} 
+          itemsPerPage={itemsPerPage} 
+        />
     </div>
   );
 };

@@ -89,6 +89,10 @@ const setCollection = (key, data) => localStorage.setItem(key, JSON.stringify(da
 const localStorageApi = {
   get: async (url) => {
     await delay();
+    if (url === '/users') {
+      const users = getCollection('hotel_users');
+      return { data: users.map(({password, ...u}) => u) };
+    }
     const key = getKey(url);
     if (!key) throw makeError('Route not found: ' + url);
     return { data: getCollection(key) };
@@ -103,9 +107,19 @@ const localStorageApi = {
         (u) => u.email.toLowerCase() === data.email.toLowerCase() && u.password === data.password
       );
       if (user) {
-        return { data: { token: 'mock-token-' + Date.now() } };
+        return { data: { token: 'mock-token-' + Date.now(), user: { email: user.email, prenom: user.prenom, nom: user.nom } } };
       }
       throw makeError('Email ou mot de passe incorrect');
+    }
+
+    if (url === '/auth/register') {
+      const users = getCollection('hotel_users');
+      const existing = users.find(u => u.email.toLowerCase() === data.email.toLowerCase());
+      if (existing) throw makeError('Cet email est déjà utilisé');
+      const newUser = { _id: generateId(), nom: data.nom, prenom: data.prenom, email: data.email, password: data.password, role: 'user' };
+      users.push(newUser);
+      setCollection('hotel_users', users);
+      return { data: { message: 'Utilisateur créé', user: { email: newUser.email, prenom: newUser.prenom, nom: newUser.nom } } };
     }
 
     const key = getKey(url);
@@ -132,6 +146,12 @@ const localStorageApi = {
 
   delete: async (url) => {
     await delay();
+    if (url.startsWith('/users/')) {
+      const id = url.split('/').pop();
+      const users = getCollection('hotel_users');
+      setCollection('hotel_users', users.filter(u => u._id !== id));
+      return { data: { success: true } };
+    }
     const key = getKey(url);
     if (!key) throw makeError('Route not found: ' + url);
     const id = url.split('/').pop();
@@ -171,6 +191,13 @@ const supabaseApi = {
       return { data: data.map(mapReservation) };
     }
 
+    if (url.startsWith('/users')) {
+      // Very simplified user fetch for Supabase if there's a profiles table
+      const { data, error } = await supabase.from('profiles').select('*');
+      if (error) throw makeError(error.message);
+      return { data };
+    }
+
     throw makeError('Route not found: ' + url);
   },
 
@@ -182,6 +209,16 @@ const supabaseApi = {
       });
       if (error) throw makeError(error.message);
       return { data: { token: authData.session.access_token, user: authData.user } };
+    }
+
+    if (url === '/auth/register') {
+      const { data: authData, error } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: { data: { prenom: data.prenom, nom: data.nom } }
+      });
+      if (error) throw makeError(error.message);
+      return { data: { message: 'Utilisateur créé', user: authData.user } };
     }
 
     if (url.startsWith('/clients')) {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { LogIn } from 'lucide-react';
 import api from '../services/api';
 
@@ -68,6 +68,10 @@ const Login = () => {
             Sign In
           </button>
         </form>
+
+        <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.9rem' }}>
+          Vous n'avez pas de compte ? <Link to="/register" style={{ color: 'var(--primary-color)', fontWeight: '600', textDecoration: 'none' }}>S'inscrire</Link>
+        </div>
       </div>
     </div>
   );

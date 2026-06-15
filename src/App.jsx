@@ -6,6 +6,11 @@ import Clients from './pages/Clients';
 import Chambres from './pages/Chambres';
 import Reservations from './pages/Reservations';
 import Calendrier from './pages/Calendrier';
+import Register from './pages/Register';
+import Users from './pages/Users';
+import Paiements from './pages/Paiements';
+import Rapports from './pages/Rapports';
+import AuditLog from './pages/AuditLog';
 import './index.css';
 
 const ProtectedRoute = ({ children }) => {
@@ -21,12 +26,12 @@ const ProtectedRoute = ({ children }) => {
 
 const Layout = ({ children }) => {
   const location = useLocation();
-  const isLoginPage = location.pathname === '/login';
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 
   return (
     <div className="app-container">
-      {!isLoginPage && <Navbar />}
-      <div className={isLoginPage ? '' : 'main-content'} style={isLoginPage ? { width: '100%' } : {}}>
+      {!isAuthPage && <Navbar />}
+      <div className={isAuthPage ? '' : 'main-content'} style={isAuthPage ? { width: '100%' } : {}}>
         {children}
       </div>
     </div>
@@ -39,6 +44,7 @@ function App() {
       <Layout>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <Dashboard />
@@ -54,6 +60,11 @@ function App() {
               <Chambres />
             </ProtectedRoute>
           } />
+          <Route path="/users" element={
+            <ProtectedRoute>
+              <Users />
+            </ProtectedRoute>
+          } />
           <Route path="/reservations" element={
             <ProtectedRoute>
               <Reservations />
@@ -62,6 +73,21 @@ function App() {
           <Route path="/calendrier" element={
             <ProtectedRoute>
               <Calendrier />
+            </ProtectedRoute>
+          } />
+          <Route path="/paiements" element={
+            <ProtectedRoute>
+              <Paiements />
+            </ProtectedRoute>
+          } />
+          <Route path="/rapports" element={
+            <ProtectedRoute>
+              <Rapports />
+            </ProtectedRoute>
+          } />
+          <Route path="/audit-log" element={
+            <ProtectedRoute>
+              <AuditLog />
             </ProtectedRoute>
           } />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />

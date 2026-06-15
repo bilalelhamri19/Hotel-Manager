@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 import api from '../services/api';
+import Pagination from '../components/Pagination';
 
 const Clients = () => {
   const [clients, setClients] = useState([]);
@@ -9,10 +10,16 @@ const Clients = () => {
   const [formData, setFormData] = useState({ nom: '', prenom: '', email: '', telephone: '' });
   const [editId, setEditId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     fetchClients();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   const fetchClients = async () => {
     try {
@@ -86,6 +93,12 @@ const Clients = () => {
     const searchStr = `${client.nom} ${client.prenom} ${client.telephone}`.toLowerCase();
     return searchStr.includes(searchTerm.toLowerCase());
   });
+
+  const totalPages = Math.ceil(filteredClients.length / itemsPerPage);
+  const paginatedClients = filteredClients.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
     <div>
@@ -185,14 +198,14 @@ const Clients = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredClients.length === 0 ? (
+            {paginatedClients.length === 0 ? (
               <tr>
                 <td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-color)', padding: '2rem' }}>
                   No clients found.
                 </td>
               </tr>
             ) : (
-              filteredClients.map(client => (
+              paginatedClients.map(client => (
                 <tr key={client._id}>
                   <td data-label="Nom" style={{ fontWeight: '500' }}>{client.nom}</td>
                   <td data-label="Prénom">{client.prenom}</td>
@@ -213,6 +226,14 @@ const Clients = () => {
             )}
           </tbody>
         </table>
+        
+        <Pagination 
+          currentPage={currentPage} 
+          totalPages={totalPages} 
+          onPageChange={setCurrentPage} 
+          totalItems={filteredClients.length} 
+          itemsPerPage={itemsPerPage} 
+        />
       </div>
     </div>
   );
