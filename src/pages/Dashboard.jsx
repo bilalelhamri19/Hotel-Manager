@@ -1,3 +1,4 @@
+// v2.0 - Hotel Manager Pro
 import { useState, useEffect } from 'react';
 import { Users, Bed, CalendarCheck, CheckCircle, XCircle, DollarSign } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
