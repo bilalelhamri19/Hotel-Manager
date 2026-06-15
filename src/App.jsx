@@ -11,7 +11,7 @@ import Calendrier from './pages/Calendrier';
 import Paiements from './pages/Paiements';
 import Rapports from './pages/Rapports';
 import AuditLog from './pages/AuditLog';
-import AdminRoute from './components/AdminRoute';
+
 import './index.css';
 
 const ProtectedRoute = ({ children }) => {
